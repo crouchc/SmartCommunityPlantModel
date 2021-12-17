@@ -1,5 +1,5 @@
 #Conversion of HEMS_Plant code to more OOP style
-#Author: Chris Crouch
+# Author: Chris Crouch and Ninad Gaikwad
 
 #import libraries
 import numpy as np
@@ -7,7 +7,7 @@ import numpy as np
 #import functions
 
 #class creation
-class CommunitySimulation:
+class SmartCommunity_Plant:
     #inputs X_k_Plant,W_k_Plant,U_k,HEMSPlant_Params,HEMSHouse_Params,Community_Params,Simulation_Params
     
     #-------------------------- Location Information -------------------------%
@@ -411,6 +411,8 @@ class CommunitySimulation:
         HEMSWeatherData_Output1['DNI']=DNI
         HEMSWeatherData_Output1['DateTime_Matrix']=DateTime_Matrix
         
+        # To be Continued.........................................................
+        
         
         
     def __HEMS_PVEnergy_Available_Generator(self, PVEnergy_Generator_Input):
@@ -447,6 +449,32 @@ class CommunitySimulation:
             # Power generated in one Module   
             PVEnergy_Available[i] = PV_Total_Power * (1 + ((PV_TempCoeff/100)* Tm - Temp_Std)) * (GHI[i]/GHI_Std) * Simulation_StepSize/1000 
 
+    
+
     def HEMS_Plant(self, X_k_Plant):
         #initialize W_k_Plant
+        
+        
+        # To be Continued.........................................................
+        
+        
+    def __HEMS_HouseRCModel(self,HEMSHouse_Input,HEMSWeatherData_Output):
+        
+        
+        
+        # To be Continued.........................................................        
+        
+        
+    def HEMS_Plant_FigurePlotter(self, HEMS_Plant_FigurePlotter_Input):
+        
+        
+        
+        # To be Continued.........................................................     
+        
+        
+    def HEMS_Plant_Performance_Computer(self, HEMS_PerformanceComputation_Input):
+        
+        
+        
+        # To be Continued.........................................................         
         

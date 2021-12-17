@@ -1,4 +1,5 @@
 #Module creation of CodesFromSwefa
+# Author: Chris Crouch and Ninad Gaikwad
 
 import math
 import cmath

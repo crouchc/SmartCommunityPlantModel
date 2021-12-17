@@ -1,11 +1,11 @@
 # Conversion of BaselineController_Main to python
-# Author: Christopher Crouch
+# Author: Chris Crouch and Ninad Gaikwad
 
 #import necessary functions
 import numpy as np
 import pandas as pd
 import random as rand
-from CodesFromSwefa import *
+from CodeFrom_SWEEFA import *
 
 def BaselineController_Main():
     
