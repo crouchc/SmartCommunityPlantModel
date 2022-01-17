@@ -3,6 +3,8 @@
 
 #import libraries
 import numpy as np
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 #import functions
 
@@ -632,13 +634,32 @@ class SmartCommunity_Plant:
         Community_AC_P_StartUp_Used=Community_AC_StartUp_Actual*ACLoad_StartUp_Power
 
         # Creating Grouping Indices
-        N_All_Indices = range(1,N_House)
-        N_PV_Bat_Only_Indices = range(1,N1)
-        N_Bat_Only_Indices = range(N1+1,N2)
-        N_PV_Only_Indices = range(N2+1,N3)
-        N_None_Only_Indices = range(N3+1,N4)
+        N_All_Indices = range(1,N_House+1)
+        N_PV_Bat_Only_Indices = range(1,N1+1)
+        N_Bat_Only_Indices = range(N1+1,N2+1)
+        N_PV_Only_Indices = range(N2+1,N3+1)
+        N_None_Only_Indices = range(N3+1,N4+1)
         
+        ## DateTime Vector to Hours
+
+        D=DateTimeVector[1]-DateTimeVector[0]
+
+        #might need function for this but isnt time already in minutes?
+        #M=minutes(D)
+
+        H=M/60
+
+        L=len(DateTimeVector)
+
+        #had to use np.ones instead of zeros because of numpy
+        HoursVector=np.zeros((L,1))
+        HoursVector=zeros((L,1))
         
+        for i in range(2,L+1)
+            HoursVector[i,1] = HoursVector[i-1,1] + H
+
+        Len_Hours_Vector=len(HoursVector)
+    
         # To be Continued.........................................................     
         
         
