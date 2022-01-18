@@ -561,7 +561,6 @@ class SmartCommunity_Plant:
         House_AC_Controller_TurnOn_Desired=U_k_History[:,:,3]
         House_AC_Controller_TurnOn_Actual=X_k_Plant_History[:,:,21]
 
-#sum functions is different in matlab need to change it to python
         # PV Quantities - All Houses [Addup]
         Community_PV_E_Available=sum(X_k_Plant_History[:,:,1],0)
         Community_PV_E_Used=sum(X_k_Plant_History[:,:,2],0)
@@ -602,10 +601,9 @@ class SmartCommunity_Plant:
         Community_E_Generation=Community_PV_E_Used+Community_Bat_E_Discharging
         Community_E_Demand=Community_Bat_E_Charging+Community_Bat_E_TotalLoad_Actual
         
-#had to make arrays ones instead of zeros because of numpy
         #House/Community Level Battery Charging_Dispatchable/Discharging_Dispatchable
-        House_Bat_E_Charging_Dispatchable=np.ones((N_House,len(GHI),1)) # Initialization
-        House_Bat_E_Discharging_Dispatchable=np.ones((N_House,length(GHI),1)) # Initialization
+        House_Bat_E_Charging_Dispatchable=np.zeros((N_House,len(GHI),1)) # Initialization
+        House_Bat_E_Discharging_Dispatchable=np.zeros((N_House,length(GHI),1)) # Initialization
         
         for i in range(len(GHI)-1):
             if (Community_PV_E_Available(1,i,1) >= Community_Bat_E_TotalLoad_Desired(1,ii,1)):
@@ -644,22 +642,23 @@ class SmartCommunity_Plant:
 
         D=DateTimeVector[1]-DateTimeVector[0]
 
-        #might need function for this but isnt time already in minutes?
+#might need function for this but isnt time already in minutes?
         #M=minutes(D)
 
         H=M/60
 
         L=len(DateTimeVector)
 
-        #had to use np.ones instead of zeros because of numpy
         HoursVector=np.zeros((L,1))
-        HoursVector=zeros((L,1))
+        HoursVector=np.zeros((L,1))
         
         for i in range(2,L+1)
             HoursVector[i,1] = HoursVector[i-1,1] + H
 
         Len_Hours_Vector=len(HoursVector)
     
+#Are we saving multiple plots here or are there just multiple lines on one plot        
+        
         # To be Continued.........................................................     
         
         
