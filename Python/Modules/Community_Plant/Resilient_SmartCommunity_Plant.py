@@ -655,12 +655,147 @@ class SmartCommunity_Plant:
         for i in range(2,L+1)
             HoursVector[i,1] = HoursVector[i-1,1] + H
 
-        Len_Hours_Vector=len(HoursVector)
-    
-#Are we saving multiple plots here or are there just multiple lines on one plot        
+        Len_Hours_Vector=len(HoursVector)        
+                
+        #---------------------------------------House PV Power Plots - Availabe/Used/Unused------------------------------------
+
+        fig, ax = plt.subplots()
+        #Find size that is good for graphs (no auto?)
+        fig.set_size_inches(10,5)
+
+        ax.set_title("House Level - PV Power")
+        ax.set_xlabel("Time (hours)")  #use latex for hours and kW
+        ax.set_ylabel("Power (kW)")
+         
+        #Set x and y limits for graph with data and uncomment
+        plt.xlim([min(x), max(x)])
+
+        #add ax.plot for more sets
+        for i in range(N_PV_BAT_Only_Indicies.union(N_PV_Only_Indicies)):
+            ax.plot(HoursVector, EToP_Converter*House_PV_E_Available[i,0:Len_Hours_Vector,0], color = "black", linewidth=3, label="PV Power Available")
+            ax.plot(HoursVector, EToP_Converter*House_PV_E_Used[i,0:Len_Hours_Vector,0], color = "blue", linewidth=4, label="PV Power Used")
+            ax.plot(HoursVector, EToP_Converter*House_PV_E_UnUsed[i,0:Len_Hours_Vector,0], color = "red", linewidth=2, label="PV Power Unused")
+
+        ax.legend()
+
+        #Can convert to jpeg with python image library if needed
+        plt.savefig('House_PV_Power_A_U_UnU.png', dpi = 100)
+        
+        #--------------------------------------Community PV Power Plots - Availabe/Used/Unused--------------------------------
+        
+        fig, ax = plt.subplots()
+        #Find size that is good for graphs (no auto?)
+        fig.set_size_inches(10,5)
+
+        ax.set_title("Community Level - PV Power")
+        ax.set_xlabel("Time (hours)")  #use latex for hours and kW
+        ax.set_ylabel("Power (kW)")
+         
+        #Set x and y limits for graph with data and uncomment
+        plt.xlim([min(x), max(x)])
+
+        #add ax.plot for more sets
+        ax.plot(HoursVector, EToP_Converter*Community_PV_E_Available[0,0:Len_Hours_Vector,0], color = "black", linewidth=3, label="PV Power Available")
+        ax.plot(HoursVector, EToP_Converter*Community_PV_E_Used[0,0:Len_Hours_Vector,0], color = "blue", linewidth=4, label="PV Power Used")
+        ax.plot(HoursVector, EToP_Converter*Community_PV_E_UnUsed[0,0:Len_Hours_Vector,0], color = "red", linewidth=2, label="PV Power Unused")
+
+        ax.legend()
+
+        #Can convert to jpeg with python image library if needed
+        plt.savefig('Community_PV_Power_A_U_UnU.png', dpi = 100)
+        
+        #----------------------------------------House Battery SoC/Bat_Charging/Bat_Discharging Plots-------------------------- 
+        
+        fig, ax = plt.subplots()
+        #Find size that is good for graphs (no auto?)
+        fig.set_size_inches(10,5)
+
+        ax.set_title("House Level - Battery SoC/Charging/Discharging")
+        ax.set_xlabel("Time (hours)")  #use latex for hours and kW
+        ax.set_ylabel("%")
+         
+        #Set x and y limits for graph with data and uncomment
+        plt.xlim([min(x), max(x)])
+
+        #add ax.plot for more sets
+        for i in range(N_PV_Bat_Only_Indices.union(N_Bat_Only_Indices)):
+            ax.plot(HoursVector,House_Bat_SoC[i,1:Len_Hours_Vector,1], color = "blue", linewidth=3, label="SoC")
+
+        ax.plot(HoursVector, 100*np.ones((Len_Hours_Vector,1)), "--", color = "black", linewidth=4, label="")
+        ax.plot(HoursVector, 0*np.ones((Len_Hours_Vector,1)), "--", color = "black", linewidth=2, label="")
+        
+        # twin object for two different y-axis on the sample plot
+        ax2=ax.twinx()
+        # make a plot with different y-axis using second axis object
+        for i in range(N_PV_Bat_Only_Indices.union(N_Bat_Only_Indices)):
+            ax.plot(HoursVector, EToP_Converter*House_Bat_E_Charging[i,1:Len_Hours_Vector,1], color = "green", linewidth=3, label="Battery Charging Power")
+            ax.plot(HoursVector, EToP_Converter*House_Bat_E_Charging[i,1:Len_Hours_Vector,1], color = "red", linewidth=3, label="Battery Discharging Power")
+        
+        ax2.set_ylabel("Power (kW)")
+        
+        ax.legend()
+
+        #Can convert to jpeg with python image library if needed
+        plt.savefig('House_Bat_SoC_C_DisC.png', dpi = 100)
+        
+        #-----------------------------------------Community Battery SoC/Bat_Charging/Bat_Discharging Plots---------------------
+        
+        fig, ax = plt.subplots()
+        #Find size that is good for graphs (no auto?)
+        fig.set_size_inches(10,5)
+
+        ax.set_title("Community Level - Battery SoC/Charging/Discharging")
+        ax.set_xlabel("Time (hours)")  #use latex for hours and kW
+        ax.set_ylabel("%")
+         
+        #Set x and y limits for graph with data and uncomment
+        plt.xlim([min(x), max(x)])
+
+        #add ax.plot for more sets
+        ax.plot(HoursVector, Community_Bat_SoC[1,1:Len_Hours_Vector,1], color = "blue", linewidth=1.5, label="SoC")
+        ax.plot(HoursVector, 100*np.ones((Len_Hours_Vector,1)), "--", color = "black", linewidth=1, label="")
+        ax.plot(HoursVector, 0*np.ones((Len_Hours_Vector,1)), "--", color = "black", linewidth=1, label="")
+        
+        # twin object for two different y-axis on the sample plot
+        ax2=ax.twinx()
+        # make a plot with different y-axis using second axis object
+        ax.plot(HoursVector, EToP_Converter*Community_Bat_E_Charging[i,1:Len_Hours_Vector,1], color = "green", linewidth=1, label="Battery Charging Power")
+        ax.plot(HoursVector, EToP_Converter*Community_Bat_E_Charging[i,1:Len_Hours_Vector,1], color = "red", linewidth=1, label="Battery Discharging Power")
+
+        ax2.set_ylabel("Power (kW)")
+        
+        ax.legend()
+
+        #Can convert to jpeg with python image library if needed
+        plt.savefig('Community_Bat_SoC_C_DisC.png', dpi = 100)
+        
+        #------------------------------------------------------House Level - Temperature---------------------------------------
+        
+        fig, ax = plt.subplots()
+        #Find size that is good for graphs (no auto?)
+        fig.set_size_inches(10,5)
+
+        ax.set_title("House Level - Temperature")
+        ax.set_xlabel("Time (hours)")  #use latex for hours and kW
+        ax.set_ylabel("Temperature (C)")
+         
+        #Set x and y limits for graph with data and uncomment
+        plt.xlim([min(x), max(x)])
+
+        #add ax.plot for more sets
+        for i in range(len(N_House)):
+            ax.plot(HoursVector, House_Temprature[i,1:Len_Hours_Vector,1], color = "blue", linewidth=2, label="")
+            
+        ax.plot(HoursVector, T_AC_max*np.ones((Len_Hours_Vector,1)), "--", color = "black", linewidth=3, label="")
+        ax.plot(HoursVector, T_AC_min*np.ones((Len_Hours_Vector,1)), "--", color = "black", linewidth=3, label="")
+
+        ax.legend()
+
+        #Can convert to jpeg with python image library if needed
+        plt.savefig('House_Temperature.png', dpi = 100)
         
         # To be Continued.........................................................     
-        
+    
         
     def HEMS_Plant_Performance_Computer(self, HEMS_PerformanceComputation_Input):
         
