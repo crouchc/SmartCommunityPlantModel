@@ -799,7 +799,190 @@ class SmartCommunity_Plant:
         
     def HEMS_Plant_Performance_Computer(self, HEMS_PerformanceComputation_Input):
         
+        # HEMS_Plant_Performance_Computer - Computing Performance Measure of the Simulation
+
+        # Getting the desired data from the HEMS_Plant_Baseline_FigurePlotter_Input - Struct
+
+        #---------------------HEMS_PerformanceComputation-------------------------%
+        X_k_Plant_History = HEMS_PerformanceComputation["X_k_Plant_History"]
+        U_k_History = HEMS_PerformanceComputation["U_k_History"]
+        E_LoadData = HEMS_PerformanceComputation["E_LoadData"]
+        E_Load_Desired = HEMS_PerformanceComputation["E_Load_Desired"]
+        HEMSWeatherData_Output = HEMS_PerformanceComputation["HEMSWeatherData_Output"]
+        HEMSPlant_Params = HEMS_PerformanceComputation["HEMSPlant_Params"]
+        Community_Params = HEMS_PerformanceComputation["Community_Params"]
         
+        #-----------------------HEMSWeatherData_Output----------------------------#
+        Ws = HEMSWeatherData_Output["Ws"]
+        T_am = HEMSWeatherData_Output["T_am"]
+        GHI = HEMSWeatherData_Output["GHI"]
+        DNI = HEMSWeatherData_Output["DNI"]
+        DateTimeVector = HEMSWeatherData_Output["DateTimeVector"]
+        DateTime_Matrix = HEMSWeatherData_Output["DateTime_Matrix"]
+
+        #---------------------------HEMSPlant_Params------------------------------#
+
+        E_AC = HEMSPlant_Params["E_AC"]
+        T_AC_max = HEMSPlant_Params["T_AC_max"]
+        T_AC_min = HEMSPlant_Params["T_AC_min"]
+        ACLoad_StartUp_Power = HEMSPlant_Params["ACLoad_StartUp_Power"]
+        Eff_Inv = HEMSPlant_Params["Eff_Inv"]
+
+        Battery_Energy_Max = HEMSPlant_Params["Battery_Energy_Max"]
+        Battery_Energy_Min = HEMSPlant_Params["Battery_Energy_Min"]
+        MaxRate_Charging = HEMSPlant_Params["MaxRate_Charging"]
+        MaxRate_Discharging = HEMSPlant_Params["MaxRate_Discharging"]
+        Eff_Charging_Battery = HEMSPlant_Params["Eff_Charging_Battery"]
+        Eff_Discharging_Battery = HEMSPlant_Params["Eff_Discharging_Battery"]
+        MaxRate_Discharging_StartUp = HEMSPlant_Params["MaxRate_Discharging_StartUp"]
+
+        #---------------------------Community_Params-----------------------------#
+
+        N_House = Community_Params["N_House"]
+        N_PV_Bat = Community_Params["N_PV_Bat"]
+        N_Bat = Community_Params["N_Bat"]
+        N_PV = Community_Params["N_PV"]
+        N_None = Community_Params["N_None"] 
         
-        # To be Continued.........................................................         
+        ## Basic Computation
+
+        # House Numbers
+        N1 = N_PV_Bat
+        N2 = N_Bat
+        N3 = N_PV
+        N4 = N_None
+
+        # Truncating Plant History
+        X_k_Plant_History = X_k_Plant_History[:,0:X_k_Plant_History.shape[1],:]
+
+        # Computing Number of Days of Simulation
+        Start_DateTime = DateTimeVector[0]
+        End_DateTime = DateTimeVector[DateTimeVector.size]
+
+        TotalNum_Days_Simulation = daysact[Start_DateTime,End_DateTime]
+        
+        ## Performance Metric Computation
+
+        # For All Houses AC
+        
+        for j in range(len(N_House)):
+            #For one house AC
+            AC_Death_TimeTotal=0
+            for i in range(len(X_k_Plant_History[j,:,6])):
+                if (X_k_Plant_History[j,i,6] > (T_AC_max+2)):
+                    AC_Death_TimeTotal = AC_Death_TimeTotal + (10/60) # Hours
+                    
+            AC_Death_AvgPerDay[j] = AC_Death_TimeTotal / (TotalNum_Days_Simulation)
+            
+        # For All Houses All Other Loads
+        
+        All_Served=X_k_Plant_History[:,:,11]
+        All_Desired=E_Load_Desired[:,:,0]
+        
+        for j in range(len(N_House)):
+            
+            # For One House All Other Loads
+            All_Desired_Points=0
+            All_Served_Points=0
+            for i in range(len(All_Served)):
+                if(All_Desired[j,i,1] > 0):
+                    All_Desired_Points = All_Desired_Points+1
+                    
+                if((All_Served[j,i,1] < All_Desired[j,i,1]) and (not(All_Served[j,i,1] < 0))):
+                    # NC Load Not Served
+                    x = 0
+                elif ((All_Served[j,i,1] == All_Desired[j,i,1]) and (not(All_Served[j,i,1] <= 0))):
+                    All_Served_Points=All_Served_Points+1;
+
+            Percentage_All_Served[j] = ((All_Served_Points)/(All_Desired_Points)*(100))
+            
+        #For All Houses Critical Loads
+        C_Served=X_k_Plant_History[:,:,12]
+        C_Desired=E_LoadData[:,:,0]
+        
+        for j in range(len(N_House)):
+
+            # For One House Critical Loads
+            C_Desired_Points=0
+            C_Served_Points=0
+            for i in range(len(C_Served)):
+                if (C_Desired[j,i,0] > 0):
+                    C_Desired_Points=C_Desired_Points+1
+                if ((C_Served[j,i,0] < C_Desired[j,i,1]) and (not(C_Served[j,i,0] < 0))):
+                    # NC Load Not Served
+                    x=0
+                elif ((C_Served[j,i,0] == C_Desired[j,i,0]) and (not(C_Served[j,i,0] <= 0))):
+                    C_Served_Points=C_Served_Points+1
+
+            Percentage_C_Served[j] = ((C_Served_Points)/(C_Desired_Points)*(100))
+            
+        # For All Houses
+        for j in range(len(N_House)):
+            
+            # For One House PRM and SRM    
+            PRM[j] = 1-(AC_Death_AvgPerDay[j]/24)
+
+            SRM_C[j] = Percentage_C_Served[j]/100
+
+            SRM_All[j]=Percentage_All_Served[j]/100
+        
+        #RP =  (h*PRM) + ((1-h)*SRM_C.mean(axis = 0)
+
+        # Computing Performance Measure for entire Community
+        AC_Death_AvgPerDay_Community  =  AC_Death_AvgPerDay.mean(axis = 0)
+        Percentage_All_Served_Community = Percentage_All_Served.mean(axis = 0)
+        Percentage_C_Served_Community = Percentage_C_Served.mean(axis = 0)
+        PRM_Community = PRM.mean(axis = 0)
+        SRM_C_Community = SRM_C.mean(axis = 0)
+        SRM_All_Community =SRM_All.mean(axis = 0)
+        
+        ## Priniting Results
+
+        # Priniting Quantitative Results for each House
+        for i in range(len(N_House)):
+            
+            print('Average Fridge Death for House:{:d} (PLP) = {:.4f} Hours/Day'.format(i,AC_Death_AvgPerDay[i]))
+            
+            print('Percentage of Non-Critical Loads served for House:{:d} (SLP) = {:.4f} %/Day'.format(i,Percentage_C_Served[i]))
+            
+            print('Percentage of All Loads served for House:{:d} (SLP) = {:.4f} %/Day'.format(i,Percentage_All_Served[i]))
+            
+            print('House:{:d} (PRM) = {:.4f} Hours/Day'.format(i,PRM[i]))
+            
+            print('House:{:d} (SRM_C) = {:.4f} %/Day'.format(i,SRM_C[i]))
+            
+            print('House:{:d} (SRM_All) = {:.4f} %/Day'.format(i,SRM_All[i]))
+            
+        # Priniting Quantitative Results for Community
+        print('Average Fridge Death for Community (PLP) = {:.4f} Hours/Day'.format(AC_Death_AvgPerDay_Community))
+
+        print('Percentage of Non-Critical Loads served for Community (SLP) = {:.4f} %/Day'.format(Percentage_C_Served_Community))
+
+        print('Percentage of All Loads served for Community (SLP) = {:.4f} %/Day'.format(Percentage_All_Served_Community))
+
+        print(' Community (PRM) = {:.4f} Hours/Day'.format(PRM_Community))
+
+        print(' Community (SRM_C) = {:.4f} %/Day'.format(SRM_C_Community))
+
+        print(' Community (SRM_All) = {:.4f} %/Day'.format(SRM_All_Community))
+        
+        # Creating Plant_Performance
+
+        Plant_Performance =  []
+
+        Plant_Performance["AC_Death_AvgPerDay"] = AC_Death_AvgPerDay
+        Plant_Performance["Percentage_All_Served"] = Percentage_All_Served
+        Plant_Performance["Percentage_C_Served"] = Percentage_C_Served
+        Plant_Performance["PRM"] = PRM_Community
+        Plant_Performance["SRM_C"] = SRM_C_Community
+        Plant_Performance["SRM_All"] = SRM_All
+
+        Plant_Performance["AC_Death_AvgPerDay_Community"] = AC_Death_AvgPerDay_Community
+        Plant_Performance["Percentage_All_Served_Community"] = Percentage_All_Served_Community
+        Plant_Performance["Percentage_C_Served_Community"] = Percentage_C_Served_Community
+        Plant_Performance["PRM_Community"] = PRM_Community
+        Plant_Performance["SRM_C_Community"] = SRM_C_Community
+        Plant_Performance["SRM_All_Community"] = SRM_All_Community
+        
+        #Finished not tested
         
